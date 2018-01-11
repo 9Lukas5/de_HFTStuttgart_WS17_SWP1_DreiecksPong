@@ -1,35 +1,29 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+// (C)2018 Lukas Wiest
 package de.wiest_lukas.hft_stuttgart.swp1.task8.dreieckspong;
 
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.text.NumberFormat;
 import javax.swing.*;
+import static de.wiest_lukas.hft_stuttgart.swp1.task8.dreieckspong.Aufgabe8_Dreieckspong.FRAME;
 
 /**
  *
- * @author lukas
+ * @author Lukas Wiest
  */
 public class MainMenu extends javax.swing.JPanel
 {
+    private JButton btnStartNewGame;            // generates and switches to new InGame instance
+    private JButton btnExit;                    // leaves program
+    private JTextField height;                  // for input of playfield height
+    private JTextField width;                   // and width
 
-    private final JFrame parent;
-    private JButton btnStartNewGame;
-    private JButton btnExit;
-    private JTextField height;
-    private JTextField width;
-
-    public MainMenu(JFrame parent)
+    public MainMenu()
     {
         initComponents();
-        this.parent = parent;
-        this.parent.getContentPane().removeAll();
-        this.parent.getContentPane().add(this);
-        this.parent.pack();
+        FRAME.getContentPane().removeAll();     // remove everything from JFrame
+        FRAME.getContentPane().add(this);       // add ourselfs to the JFrame
+        FRAME.pack();                           // make everyone get his preffered size
     }
 
     private void initComponents()
@@ -40,7 +34,7 @@ public class MainMenu extends javax.swing.JPanel
         this.add(btnStartNewGame);
 
         this.btnExit = new JButton("Beenden");
-        this.btnExit.addActionListener(e ->
+        this.btnExit.addActionListener(al ->
         {
             System.exit(0);
         });
@@ -53,25 +47,23 @@ public class MainMenu extends javax.swing.JPanel
         this.width.setText("400");
         this.height.setText("300");
 
-        this.btnStartNewGame.addActionListener(e ->
+        this.btnStartNewGame.addActionListener(al ->
         {
-            InGame inGame;
-            int fieldWidth = 0;
+            int fieldWidth = 0;                 // variable for playfield dimension creation
             int fieldHeight = 0;
-            try
+            try                                 // try to set the vars from the textfields
             {
                 fieldWidth = Integer.valueOf(this.width.getText().replaceAll("\\.", ""));
                 fieldHeight = Integer.valueOf(this.height.getText().replaceAll("\\.", ""));
             }
-            catch (NumberFormatException ex)
+            catch (NumberFormatException ex)    // if this failed, set the default again
             {
                 fieldWidth = 400;
                 fieldHeight = 300;
             }
-            finally
+            finally                             // create new InGame instance which leaves MainMenu
             {
-                new InGame(this.parent, new Dimension(fieldWidth, fieldHeight));
-                //new Highscores(this.parent, "Lukas", 65);
+                new InGame(new Dimension(fieldWidth, fieldHeight));
             }
         });
     }

@@ -1,5 +1,6 @@
 package de.wiest_lukas.hft_stuttgart.swp1.task8.dreieckspong;
 
+import static de.wiest_lukas.hft_stuttgart.swp1.task8.dreieckspong.Aufgabe8_Dreieckspong.FRAME;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -19,20 +20,18 @@ import javax.swing.table.*;
  */
 public class Highscores extends JPanel
 {
-    private JFrame parent;
     private LinkedList<String> highscoresPlayers;
     private LinkedList<Integer> highscoresScores;
 
-    public Highscores(JFrame parent, String player, int score)
+    public Highscores(String player, int score)
     {
-        this.parent = parent;
         this.highscoresPlayers = new LinkedList<>();
         this.highscoresScores = new LinkedList<>();
         this.setLayout(new BorderLayout());
 
         File highscoresFile = new File(System.getProperty("user.home")
                 + "/"
-                + Aufgabe8_Dreieckspong.baseFolder
+                + Aufgabe8_Dreieckspong.BASEFOLDER
                 + "/highscores.conf");
 
         if (highscoresFile.exists())
@@ -161,12 +160,11 @@ public class Highscores extends JPanel
         bottom.setHorizontalAlignment(SwingConstants.CENTER);
         this.add(bottom, BorderLayout.SOUTH);
 
-        this.parent = parent;
-        this.parent.getContentPane().removeAll();
-        this.parent.getContentPane().add(this);
-        this.parent.setSize(new Dimension(300, 235));
-        this.parent.revalidate();
-        this.parent.repaint();
+        FRAME.getContentPane().removeAll();
+        FRAME.getContentPane().add(this);
+        FRAME.setSize(new Dimension(300, 235));
+        FRAME.revalidate();
+        FRAME.repaint();
 
     }
 

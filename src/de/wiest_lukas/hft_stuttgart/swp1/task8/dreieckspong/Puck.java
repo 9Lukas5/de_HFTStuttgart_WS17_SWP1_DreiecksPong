@@ -10,12 +10,8 @@ public class Puck extends Point2D.Double
     public Puck()
     {
         super();
-        double xCoord = 3.;
-        double YCoord = 1.;
-        double unit = 1.;
-        double length = Math.sqrt(xCoord * xCoord + YCoord * YCoord);
-        unit /= length;
-        this.unitVector = new DirectionVector(new double[] {unit * xCoord, unit * YCoord});
+        this.unitVector = new DirectionVector(2);
+        this.unitVector.setVector(new double[] {Math.random(), Math.random()}, true);
     }
 
     public void setDiameter(int diameter)
@@ -25,10 +21,7 @@ public class Puck extends Point2D.Double
 
     public void setUnitVector(double x, double y)
     {
-        double unit = 1.;
-        double length = Math.sqrt(x * x + y * y);
-        unit /= length;
-        this.unitVector = new DirectionVector(new double[] {unit * x, unit * y});
+        this.unitVector.setVector(new double[] {x, y}, true);
     }
 
     public int getDiameter()

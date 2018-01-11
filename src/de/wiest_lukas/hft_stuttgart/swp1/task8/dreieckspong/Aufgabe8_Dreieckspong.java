@@ -1,3 +1,4 @@
+// (C)2018 Lukas Wiest
 package de.wiest_lukas.hft_stuttgart.swp1.task8.dreieckspong;
 
 import javax.swing.JFrame;
@@ -8,19 +9,21 @@ import javax.swing.JFrame;
  */
 public class Aufgabe8_Dreieckspong
 {
-    protected static final String baseFolder = ".62wilu1bif_SWP1_DreiecksPong";
+    // name of programs application data folder
+    protected static final String BASEFOLDER = ".62wilu1bif_SWP1_DreiecksPong";
+
+    protected static final JFrame FRAME = new JFrame();
 
     public static void main(String[] args)
     {
-        JFrame frame;
+        FRAME.setTitle("SWP1 Dreieckspong - (c) Lukas Wiest");
+        FRAME.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        FRAME.setLocation(200, 400);
+        FRAME.setResizable(false);
+        FRAME.setVisible(true);
 
-        frame = new JFrame();
-        frame.setTitle("SWP1 Dreieckspong - (c) Lukas Wiest");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLocation(200, 400);
-        frame.setResizable(false);
-        frame.setVisible(true);
-
-        new MainMenu(frame);
+        // generate new MainMenu (this automatically removes all contents from FRAME and adds
+        // the new instance to the contentPane
+        new MainMenu();
     }
 }

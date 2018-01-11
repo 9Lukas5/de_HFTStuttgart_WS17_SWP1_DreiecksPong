@@ -42,4 +42,27 @@ public class DirectionVector
     {
         return this.values[dimension];
     }
+
+    public void setVector(double[] values, boolean normalize)
+    {
+        if (values.length != this.values.length)
+            throw new ArrayIndexOutOfBoundsException("mismatched dimensions");
+
+        this.values = values;
+
+        if (normalize)
+            this.normalize();
+    }
+
+    public void normalize()
+    {
+        double length = 0;
+        for (double tmp: this.values)
+            length += tmp*tmp;
+
+        length = Math.sqrt(length);
+
+        for (int i=0; i < this.values.length; i++)
+            this.values[i] = this.values[i]/length;
+    }
 }

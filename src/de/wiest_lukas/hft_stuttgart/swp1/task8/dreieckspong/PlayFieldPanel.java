@@ -44,6 +44,7 @@ public class PlayFieldPanel extends JPanel
         g2d.draw(right);
         g2d.draw(player);
 
+        // draw the circle around the pucks point, instead of down and right from the puck
         g2d.fillOval(
                 (int) puck.getX() - (puck.getDiameter() / 2),
                 (int) puck.getY() - (puck.getDiameter() / 2),

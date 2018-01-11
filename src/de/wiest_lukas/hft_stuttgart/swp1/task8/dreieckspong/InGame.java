@@ -1,5 +1,7 @@
+// (C)2018 Lukas Wiest
 package de.wiest_lukas.hft_stuttgart.swp1.task8.dreieckspong;
 
+import static de.wiest_lukas.hft_stuttgart.swp1.task8.dreieckspong.Aufgabe8_Dreieckspong.FRAME;
 import de.wiest_lukas.lib.AACPlayer;
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -18,71 +20,45 @@ import javax.swing.*;
  */
 public class InGame extends JPanel
 {
-    private final JFrame parent;
+    private JPanel stats;                   // JPanel holding the points etc on the right side
+    private JTextField score;               // textfield showing the current score
+    private JLabel muted;                   // label for showing the user that the audio is muted
 
-    private PlayFieldPanel playground;
-    private final Dimension playFieldSize;
+    private PlayFieldPanel playground;      // JPanel containing the actual playfield
+    private PongLine left;                  // left side of triangle
+    private PongLine right;                 // right side of triangle
+    private PongLine player;                // bottom side of triangle / player
+    private Puck puck;                      // moving puck
 
-    private JPanel stats;
-    private JTextField score;
+    private Timer puckMovage;               // this timer moves the puck
+    private Timer refresher;                // this timer calls the JFrames repaint method
+    private Timer playerMove;               // this timer moves the player (bottom triangle side)
+    private int playerDirection;            // set's the direction the player has to be moved
 
-    private PongLine left;
-    private PongLine right;
-    private PongLine player;
-    private Puck puck;
+    private AACPlayer music;                // musicPlayer instance for background music
+    private AACPlayer ponged;               // and the hit sound
 
-    private Timer puckMovage;
-    private Timer refresher;
-    private Timer playerMove;
-    private int playerDirection;
-
-    private AACPlayer music;
-    private AACPlayer ponged;
-    private JLabel muted;
-
-    public InGame(JFrame parent, Dimension playFieldSize)
+    public InGame(Dimension playFieldSize)
     {
-        this.playFieldSize = playFieldSize;
-        this.setLines();
-        this.setPuck();
-        this.initComponents();
-        this.parent = parent;
-        this.parent.getContentPane().removeAll();
-        this.parent.getContentPane().add(this);
-        this.parent.pack();
-        this.parent.setFocusable(true);
-        this.setFocusable(true);
-        this.requestFocusInWindow();
+        this.initComponents();                  // init ourselfs
+        this.initStatsPanel();                  // init statistics panel and all it's components
+        this.initPlayfieldPanel(playFieldSize); // init playfield and all it's components
+        this.initAudio();                       // init the audio playback
+
+        FRAME.getContentPane().removeAll();     // remove everything from frame
+        FRAME.getContentPane().add(this);       // add us to it
+        FRAME.pack();                           // get us room
+        FRAME.setFocusable(true);               // make sure the frame...
+        this.setFocusable(true);                // ...and we are both focusable
+        this.requestFocusInWindow();            // request focus
     }
 
     private void initComponents()
     {
-        this.setVisible(true);
-        this.setLayout(new BorderLayout());
-        this.setFocusable(true);
+        this.setVisible(true);                  // we want to be seen
+        this.setLayout(new BorderLayout());     // and have a BorderLayout
 
-        this.playground = new PlayFieldPanel(this.playFieldSize, this.left, this.right, this.puck, this.player);
-        this.add(this.playground, BorderLayout.CENTER);
-
-        this.stats = new JPanel();
-        this.stats.setLayout(new BoxLayout(this.stats, BoxLayout.PAGE_AXIS));
-        JPanel statsContainer = new JPanel(new BorderLayout());
-        statsContainer.add (this.stats, BorderLayout.NORTH);
-        this.add(statsContainer, BorderLayout.EAST);
-        this.stats.add(new JLabel("Punkte: "));
-        this.score = new JTextField();
-        this.score.setEditable(false);
-        this.score.setText("0");
-        this.score.setHorizontalAlignment(SwingConstants.RIGHT);
-        this.score.setBackground(Color.white);
-        this.score.setFocusable(false);
-        this.stats.add(this.score);
-
-        this.muted = new JLabel("muted");
-        this.muted.setVisible(false);
-        this.stats.add(this.muted);
-
-        this.addKeyListener(new KeyListener()
+        this.addKeyListener(new KeyListener()   // we need to listen to the user to play
         {
             @Override
             public void keyTyped(KeyEvent ke) { }
@@ -93,15 +69,13 @@ public class InGame extends JPanel
                 switch (ke.getKeyCode())
                 {
                     case KeyEvent.VK_LEFT:
-                        playerDirection = -5;
-                        playerMove.start();
-                        // movePlayer(-5);
+                        playerDirection = -5;   // set the playerDirection
+                        playerMove.start();     // and start the player movement timer
                         break;
 
                     case KeyEvent.VK_RIGHT:
-                        playerDirection = 5;
+                        playerDirection = 5;    // see above
                         playerMove.start();
-                        // movePlayer(5);
                         break;
                 }
             }
@@ -113,32 +87,25 @@ public class InGame extends JPanel
                 {
                     case KeyEvent.VK_LEFT:
                     case KeyEvent.VK_RIGHT:
-                        movePlayer(playerDirection);
-                        playerMove.stop();
+                        playerMove.stop();      // stop the player movement timer
                         break;
 
                     case KeyEvent.VK_M:
-                        if (music != null)
-                            music.toggleMute();
-                        if (ponged != null)
+                        if (music != null)      // if music is not null
+                            music.toggleMute(); // toggle the mute
+                        if (ponged != null)     // same for the hit sound
                             ponged.toggleMute();
 
+                        // invert the visibility of the muted label
                         muted.setVisible(!muted.isVisible());
                         break;
                 }
             }
         });
 
-        this.puckMovage = new Timer(40, al ->
+        this.refresher = new Timer(5, al ->
         {
-            puck.move();
-            checkForCollission();
-        });
-        this.puckMovage.start();
-
-        this.refresher = new Timer(60/1000, al ->
-        {
-            this.parent.repaint();
+            FRAME.repaint();                    // repaint all 5ms as this is the fastest change ever made
         });
         refresher.start();
 
@@ -146,7 +113,98 @@ public class InGame extends JPanel
         {
             movePlayer(playerDirection);
         });
+    }
 
+    private void initStatsPanel()
+    {
+        // surrounding JPanel with BorderLayout for optical reasons
+        JPanel statsContainer = new JPanel(new BorderLayout());
+        this.stats = new JPanel();
+        // actual Panel with a BoxLayout
+        this.stats.setLayout(new BoxLayout(this.stats, BoxLayout.PAGE_AXIS));
+
+        // add actual Panel to the outer one to the Norht, as this is only using the full width,
+        // but the preferred height
+        statsContainer.add (this.stats, BorderLayout.NORTH);
+        // then add the surrounding panel to this (the InGame panel) on the east
+        this.add(statsContainer, BorderLayout.EAST);
+
+        this.stats.add(new JLabel("Punkte: "));
+        this.score = new JTextField();
+        this.score.setEditable(false);
+        this.score.setText("0");
+        this.score.setHorizontalAlignment(SwingConstants.RIGHT);
+        this.score.setBackground(Color.white);
+        // make this unfocusable, instead we wouldn't be able to get the focus back to the
+        // InGame Panel afterwards
+        this.score.setFocusable(false);
+        this.stats.add(this.score);
+
+        this.muted = new JLabel("muted");
+        // this is changed if we toggle the mute to visible
+        this.muted.setVisible(false);
+        this.stats.add(this.muted);
+    }
+
+    private void initPlayfieldPanel(Dimension playFieldSize)
+    {
+        this.setLines(playFieldSize);       // init the lines
+        this.setPuck();                     // init the puck
+
+        // generate new playground panel
+        this.playground = new PlayFieldPanel(playFieldSize, this.left, this.right, this.puck, this.player);
+        // and add it to the Center
+        this.add(this.playground, BorderLayout.CENTER);
+    }
+
+    private void setLines(Dimension playFieldSize)
+    {
+        // start Vector will be in the middle and 10 pixels down
+        int startX = (int) (playFieldSize.getWidth() / 2.);
+        int startY = 10;
+
+        // destination Vector will be near the ground and the sides
+        int destX = 5;
+        int destY = (int) (playFieldSize.getHeight()) - 10;
+        left = new PongLine(startX, startY, destX, destY, PongLine.Inside.LEFT);
+
+        destX = (int) (playFieldSize.getWidth()) - 5;
+        right = new PongLine(startX, startY, destX, destY, PongLine.Inside.RIGHT);
+
+        this.player = new PongLine (
+                this.left.getX1() - 25 ,
+                this.left.getY2(),
+                this.left.getX1() + 25,
+                this.left.getY2(),
+                PongLine.Inside.LEFT
+        );
+    }
+
+    private void setPuck()
+    {
+        this.puck = new Puck();
+        // for the beginning, set the start point relatively centerd
+        this.puck.setLocation(this.left.getX1(), this.left.getY2() / 2);
+        // the puck should be 10px by 10px
+        this.puck.setDiameter(10);
+
+        this.puckMovage = new Timer(30, al ->
+        {
+            puck.move();
+            checkForCollission();
+        });
+        this.puckMovage.start();
+    }
+
+    /**
+     * Init the Audio playback.
+     * 
+     * - exports the audio files from the jar to the systems tmp folder<br>
+     * - creates AACPlayer instances for each file<br>
+     * - enables the repeat for the background music<br>
+     */
+    private void initAudio()
+    {
         URL backgroundMusicURL = getClass().getResource("/de/wiest_lukas/hft_stuttgart/swp1/task8/dreieckspong/music/backgroundMusic.m4a");
         URL pongURL = getClass().getResource("/de/wiest_lukas/hft_stuttgart/swp1/task8/dreieckspong/music/pong.m4a");
         try
@@ -188,36 +246,6 @@ public class InGame extends JPanel
 
         if (this.music != null)
             this.music.play();
-    }
-
-    private void setLines()
-    {
-        // start Vector will be in the middle and 10 pixels down
-        int startX = (int) (this.playFieldSize.getWidth() / 2.);
-        int startY = 10;
-
-        // destination Vector will be near the ground and the sides
-        int destX = 5;
-        int destY = (int) (this.playFieldSize.getHeight()) - 10;
-        left = new PongLine(startX, startY, destX, destY, PongLine.Position.LEFT);
-
-        destX = (int) (this.playFieldSize.getWidth()) - 5;
-        right = new PongLine(startX, startY, destX, destY, PongLine.Position.RIGHT);
-
-        this.player = new PongLine (
-                this.left.getX1() - 25 ,
-                this.left.getY2(),
-                this.left.getX1() + 25,
-                this.left.getY2(),
-                PongLine.Position.BOTTOM
-        );
-    }
-
-    private void setPuck()
-    {
-        this.puck = new Puck();
-        this.puck.setLocation(this.left.getX1(), this.left.getY2() / 2);
-        this.puck.setDiameter(10);
     }
 
     private void movePlayer(int moveMent)
@@ -264,7 +292,8 @@ public class InGame extends JPanel
                 this.refresher.stop();
                 if (this.music != null)
                     this.music.stop();
-                new AfterGame(this.parent, this.score.getText());
+
+                new AfterGame(this.score.getText());
             }
         }
     }
@@ -285,18 +314,14 @@ public class InGame extends JPanel
     private void changeDirection(PongLine line)
     {
         // print income angle
-        DirectionVector lineVector = new DirectionVector(new double[]{line.getX2() - line.getX1(), line.getY2() - line.getY1()});
+        DirectionVector lineVector = line.getDirectionVector();
         DirectionVector puckVector = puck.getUnitVector();
 
+        // get angle between current direction and hit line
         double angle = (Math.acos(puckVector.scalar(lineVector) / ((lineVector.length() * puckVector.length()))));
-        while (angle < 2*Math.PI)
-            angle += 2*Math.PI;
-        while (angle > 2*Math.PI)
-            angle -= 2*Math.PI;
 
-        // System.out.println(Math.toDegrees(angle));
-
-        if (line.position == PongLine.Position.RIGHT)
+        // dependant on which side of the line is on the inside of the playfield use the dedicated angle change
+        if (line.inside == PongLine.Inside.RIGHT)
         {
             if (2* angle > Math.PI)
             {
@@ -307,7 +332,6 @@ public class InGame extends JPanel
                 angle *= 2;
             }
         }
-
         else
         {
             if (2* angle > Math.PI)
@@ -320,19 +344,17 @@ public class InGame extends JPanel
             }
         }
 
-        // System.out.println(Math.toDegrees(angle));
-
         double newX;
         double newY;
 
-        newX = (puckVector.getValue(0) * Math.cos(angle) - puckVector.getValue(1) * Math.sin(angle));// * -1;
-        newY = (puckVector.getValue(0) * Math.sin(angle) + puckVector.getValue(1) * Math.cos(angle));// * -1;
+        // calculate the new Direction Vectors values
+        newX = (puckVector.getValue(0) * Math.cos(angle) - puckVector.getValue(1) * Math.sin(angle));
+        newY = (puckVector.getValue(0) * Math.sin(angle) + puckVector.getValue(1) * Math.cos(angle));
 
-        // System.out.println("X: " + newX);
-        // System.out.println("Y: " + newY);
-
+        // set the pucks new Direction Vector
         puck.setUnitVector(newX, newY);
 
+        // if the hit player is available, play it
         if (this.ponged != null)
             this.ponged.play();
 

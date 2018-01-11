@@ -1,6 +1,6 @@
 package de.wiest_lukas.hft_stuttgart.swp1.task8.dreieckspong;
 
-import java.awt.BorderLayout;
+import static de.wiest_lukas.hft_stuttgart.swp1.task8.dreieckspong.Aufgabe8_Dreieckspong.FRAME;
 import java.awt.Color;
 import java.awt.GridLayout;
 import javax.swing.*;
@@ -11,21 +11,18 @@ import javax.swing.*;
  */
 public class AfterGame extends JPanel
 {
-    private JFrame parent;
     private JTextField player;
     private JTextField score;
     private JButton next;
     private JButton skip;
 
-    public AfterGame (JFrame parent, String score)
+    public AfterGame (String score)
     {
-        this.parent = parent;
         initComponents(score);
-        this.parent = parent;
-        this.parent.getContentPane().removeAll();
-        this.parent.getContentPane().add(this);
-        this.parent.pack();
-        this.parent.setFocusable(true);
+        FRAME.getContentPane().removeAll();
+        FRAME.getContentPane().add(this);
+        FRAME.pack();
+        FRAME.setFocusable(true);
         this.setFocusable(true);
         this.requestFocusInWindow();
     }
@@ -58,14 +55,14 @@ public class AfterGame extends JPanel
         this.next = new JButton("Speichern");
         this.next.addActionListener(al ->
         {
-            new Highscores(this.parent, this.player.getText(), Integer.valueOf(score));
+            new Highscores(this.player.getText(), Integer.valueOf(score));
         });
         this.add(this.next);
 
         this.skip = new JButton("Ueberspringen");
         this.skip.addActionListener(al ->
         {
-            new Highscores(this.parent, null, Integer.valueOf(score));
+            new Highscores(null, Integer.valueOf(score));
         });
         this.add(this.skip);
 

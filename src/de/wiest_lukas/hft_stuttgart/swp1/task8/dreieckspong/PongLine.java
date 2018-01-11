@@ -6,19 +6,20 @@ public class PongLine extends Line2D.Double
 {
     private double puckDistanceCurrent = 0;
     private double puckDistanceBefore = 0;
-    public final Position position;
+    public final Inside inside;
+    private final DirectionVector dVector;
 
-    public enum Position
+    public enum Inside
     {
         LEFT,
         RIGHT,
-        BOTTOM;
     }
 
-    public PongLine (double startX, double startY, double destX, double destY, Position position)
+    public PongLine (double startX, double startY, double destX, double destY, Inside position)
     {
         super(startX, startY, destX, destY);
-        this.position = position;
+        this.inside = position;
+        this.dVector = new DirectionVector(new double[] {destX - startX, destY - startY});
     }
 
     public void setNewPuckDistance(double distance)
@@ -30,5 +31,10 @@ public class PongLine extends Line2D.Double
     public boolean movesToMe()
     {
         return this.puckDistanceBefore > this.puckDistanceCurrent;
+    }
+
+    public DirectionVector getDirectionVector()
+    {
+        return this.dVector;
     }
 }
