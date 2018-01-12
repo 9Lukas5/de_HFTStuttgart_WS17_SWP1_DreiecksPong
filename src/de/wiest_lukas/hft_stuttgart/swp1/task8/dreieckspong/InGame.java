@@ -77,6 +77,13 @@ public class InGame extends JPanel
                         playerDirection = 5;    // see above
                         playerMove.start();
                         break;
+
+                    case KeyEvent.VK_C:         // if CTRL+C got pressed, exit ingame
+                        if (ke.getModifiers() == KeyEvent.CTRL_MASK)
+                        {
+                            exitIngame();
+                        }
+                        break;
                 }
             }
 
@@ -287,14 +294,7 @@ public class InGame extends JPanel
                     puckMovage.setDelay(puckMovage.getDelay() - 5);
             }
             else
-            {
-                this.puckMovage.stop();
-                this.refresher.stop();
-                if (this.music != null)
-                    this.music.stop();
-
-                new AfterGame(this.score.getText());
-            }
+                exitIngame();
         }
     }
 
@@ -358,6 +358,16 @@ public class InGame extends JPanel
         if (this.ponged != null)
             this.ponged.play();
 
+    }
+
+    private void exitIngame()
+    {
+        this.puckMovage.stop();
+        this.refresher.stop();
+        if (this.music != null)
+            this.music.stop();
+
+        new AfterGame(this.score.getText());
     }
 
 }
