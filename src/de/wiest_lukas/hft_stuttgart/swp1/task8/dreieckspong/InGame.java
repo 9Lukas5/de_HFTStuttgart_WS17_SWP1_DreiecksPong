@@ -307,8 +307,9 @@ public class InGame extends JPanel
         toReturn *= end.getY() - start.getY();
         toReturn -= (puck.getY() - start.getY()) * (end.getX() - start.getX());
         toReturn /= Math.sqrt(Math.pow(end.getX() - start.getX(), 2.) + Math.pow(end.getY() - start.getY(), 2.));
-        line.setNewPuckDistance(Math.abs(toReturn));
-        return Math.abs(toReturn);
+        toReturn = Math.abs(toReturn);
+        line.setNewPuckDistance(toReturn);
+        return toReturn;
     }
 
     private void changeDirection(PongLine line)
